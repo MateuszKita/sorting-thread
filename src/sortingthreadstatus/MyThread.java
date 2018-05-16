@@ -23,7 +23,7 @@ public class MyThread extends Thread {
         Collections.sort(arrayFragment);
         BufferedWriter out;
         try {
-            out = new BufferedWriter(new FileWriter("P:\\GitHub\\git-flow\\SortingThreadStatus\\src\\files\\write\\" + fileName));
+            out = new BufferedWriter(new FileWriter("P:\\GitHub\\sorting-thread\\src\\files\\write\\" + fileName));
 //            System.out.println(arrayFragment.toString());
             out.write(arrayFragment.toString());
             out.close();

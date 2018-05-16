@@ -142,7 +142,7 @@ public class SortingThreads extends javax.swing.JFrame {
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
 
-        File folder = new File("P:\\GitHub\\git-flow\\SortingThreadStatus\\src\\files\\read");
+        File folder = new File("P:\\GitHub\\sorting-thread\\src\\files\\read");
         File[] listOfFiles = folder.listFiles();
 
         for (int i = 0; i < listOfFiles.length; i++) {
@@ -159,7 +159,7 @@ public class SortingThreads extends javax.swing.JFrame {
             try {
                 console.append("\n" + filesNames.get(i));
                 BufferedReader br;
-                br = new BufferedReader(new FileReader("P:\\GitHub\\git-flow\\SortingThreadStatus\\src\\files\\read\\" + filesNames.get(i)));
+                br = new BufferedReader(new FileReader("P:\\GitHub\\sorting-thread\\src\\files\\read\\" + filesNames.get(i)));
                 List<Integer> numbers = new ArrayList<>();
                 String line = null;
 
@@ -257,7 +257,7 @@ public class SortingThreads extends javax.swing.JFrame {
                 Collections.sort(dataFromFiles.get(flag));
                 BufferedWriter out;
                 try {
-                    out = new BufferedWriter(new FileWriter("P:\\GitHub\\git-flow\\SortingThreadStatus\\src\\files\\write\\" + filesNames.get(flag)));
+                    out = new BufferedWriter(new FileWriter("P:\\GitHub\\sorting-thread\\src\\files\\write\\" + filesNames.get(flag)));
                     out.write(dataFromFiles.get(flag).toString());
                     out.close();
                     progressBar.setValue(100);
