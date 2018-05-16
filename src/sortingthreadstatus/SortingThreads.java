@@ -28,10 +28,6 @@ public class SortingThreads extends javax.swing.JFrame {
         initComponents();
     }
 
-    private static String getField(String line) {
-        return line.split(" ")[0];
-    }
-
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
@@ -169,9 +165,7 @@ public class SortingThreads extends javax.swing.JFrame {
                         numbers.add(Integer.parseInt(strNumber));
                     }
                 }
-
                 dataFromFiles.add(numbers);
-
                 br.close();
             } catch (IOException ex) {
                 Logger.getLogger(SortingThreads.class.getName()).log(Level.SEVERE, null, ex);
@@ -225,8 +219,6 @@ public class SortingThreads extends javax.swing.JFrame {
     public class SortingThread extends Thread {
 
         int time;
-//        List<Integer> arrayFragment;
-//        String fileName;
         JProgressBar progressBar;
 
         SortingThread(JProgressBar progressBar, int time) {
@@ -251,9 +243,9 @@ public class SortingThreads extends javax.swing.JFrame {
                     sleep(200);
                 } catch (InterruptedException ex) {
                     Logger.getLogger(SortingThreads.class.getName()).log(Level.SEVERE, null, ex);
+                    progressBar.setValue(100);
                 }
                 System.out.println(dataFromFiles.get(flag));
-//                System.out.println("\n\n---------" + flag);
                 Collections.sort(dataFromFiles.get(flag));
                 BufferedWriter out;
                 try {
@@ -264,35 +256,17 @@ public class SortingThreads extends javax.swing.JFrame {
                     ++flag;
                 } catch (IOException ex) {
                     Logger.getLogger(MyThread.class.getName()).log(Level.SEVERE, null, ex);
+                    progressBar.setValue(100);
                 }
+            } else {
+                thread1.setValue(100);
+                thread2.setValue(100);
+                thread3.setValue(100);
+                thread4.setValue(100);
             }
         }
     }
 
-//    public void sort(int filesAmount) throws InterruptedException {
-//        for (int i = 0; i < filesAmount; i++) {
-//            if (flag < filesAmount) {
-//                SortingThread th1 = new SortingThread(thread1);
-//                flag++;
-//                th1.start();
-//            }
-//            if (flag < filesAmount) {
-//                SortingThread th2 = new SortingThread(thread2);
-//                flag++;
-//                th2.start();
-//            }
-//            if (flag < filesAmount) {
-//                SortingThread th3 = new SortingThread(thread3);
-//                flag++;
-//                th3.start();
-//            }
-//            if (flag < filesAmount) {
-//                SortingThread th4 = new SortingThread(thread4);
-//                flag++;
-//                th4.start();
-//            }
-//        }
-//    }
     public static void main(String args[]) {
         java.awt.EventQueue.invokeLater(() -> {
             new SortingThreads().setVisible(true);
