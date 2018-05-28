@@ -23,6 +23,10 @@ public class SortingThreads extends javax.swing.JFrame {
     List<String> filesNames = new ArrayList<>();
     List<List<Integer>> dataFromFiles = new ArrayList<>();
 
+    public SortingThreads() {
+        initComponents();
+    }
+
     synchronized int getFlag() {
         flag++;
         return flag - 1;
