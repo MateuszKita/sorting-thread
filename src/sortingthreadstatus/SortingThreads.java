@@ -3,6 +3,7 @@ package sortingthreadstatus;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -10,8 +11,6 @@ import static java.lang.Thread.sleep;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Timer;
-import java.util.TimerTask;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JProgressBar;
@@ -24,8 +23,9 @@ public class SortingThreads extends javax.swing.JFrame {
     List<String> filesNames = new ArrayList<>();
     List<List<Integer>> dataFromFiles = new ArrayList<>();
 
-    public SortingThreads() {
-        initComponents();
+    synchronized int getFlag() {
+        flag++;
+        return flag - 1;
     }
 
     @SuppressWarnings("unchecked")
@@ -138,119 +138,72 @@ public class SortingThreads extends javax.swing.JFrame {
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
 
+        console.append("\n" + "heja");
+
         File folder = new File("P:\\GitHub\\sorting-thread\\src\\files\\read");
         File[] listOfFiles = folder.listFiles();
 
-        for (int i = 0; i < listOfFiles.length; i++) {
-            File file = listOfFiles[i];
+        for (File file : listOfFiles) {
             if (file.isFile() && file.getName().endsWith(".txt")) {
                 filesNames.add(file.getName());
             }
         }
 
-        int filesAmount = filesNames.size();
-
-        console.append("\n-------------------------LIST OF FILES---------------------------------");
-        for (int i = 0; i < filesAmount; i++) {
-            try {
-                console.append("\n" + filesNames.get(i));
-                BufferedReader br;
-                br = new BufferedReader(new FileReader("P:\\GitHub\\sorting-thread\\src\\files\\read\\" + filesNames.get(i)));
-                List<Integer> numbers = new ArrayList<>();
-                String line = null;
-
-                while ((line = br.readLine()) != null) {
-                    String[] strNumbers = line.split(" ");
-                    for (String strNumber : strNumbers) {
-                        numbers.add(Integer.parseInt(strNumber));
-                    }
-                }
-                dataFromFiles.add(numbers);
-                br.close();
-            } catch (IOException ex) {
-                Logger.getLogger(SortingThreads.class.getName()).log(Level.SEVERE, null, ex);
-            }
+        QueueWatcher queueWatcher = new QueueWatcher();
+        queueWatcher.start();
+        try {
+            queueWatcher.join();
+        } catch (InterruptedException ex) {
+            Logger.getLogger(SortingThreads.class.getName()).log(Level.SEVERE, null, ex);
         }
-
-        SortingThread th1 = new SortingThread(thread1, 10);
-        SortingThread th2 = new SortingThread(thread2, 20);
-        SortingThread th3 = new SortingThread(thread3, 30);
-        SortingThread th4 = new SortingThread(thread4, 40);
-
-        th1.start();
-        th2.start();
-        th3.start();
-        th4.start();
-
-        Timer t = new Timer();
-        t.schedule(new TimerTask() {
-            @Override
-            public void run() {
-                System.out.println("Checking");
-                if (flag < filesAmount) {
-                    if (!th1.isAlive() && flag < filesAmount) {
-                        SortingThread th1 = new SortingThread(thread1, 10);
-                        System.out.println(!th4.isAlive());
-                        th1.start();
-                    }
-                    if (!th2.isAlive() && flag < filesAmount) {
-                        SortingThread th2 = new SortingThread(thread2, 20);
-                        System.out.println(!th2.isAlive());
-                        th2.start();
-                    }
-                    if (!th3.isAlive() && flag < filesAmount) {
-                        SortingThread th3 = new SortingThread(thread3, 30);
-                        System.out.println(!th3.isAlive());
-                        th3.start();
-                    }
-                    if (!th4.isAlive() && flag < filesAmount) {
-                        SortingThread th4 = new SortingThread(thread4, 40);
-                        System.out.println(!th4.isAlive());
-                        th4.start();
-                    }
-                } else {
-                    t.cancel();
-                    return;
-                }
-            }
-        }, 0, 800);
     }//GEN-LAST:event_jButton1ActionPerformed
 
     public class SortingThread extends Thread {
 
-        int time;
         JProgressBar progressBar;
+        String fileName;
 
-        SortingThread(JProgressBar progressBar, int time) {
+        SortingThread(JProgressBar progressBar, String fileName) {
             this.progressBar = progressBar;
-            this.time = time;
+            this.fileName = fileName;
         }
 
         @Override
         public void run() {
+            List<Integer> numbers = new ArrayList<>();
             if (flag < filesNames.size()) {
                 try {
-                    sleep(time);
-                    progressBar.setValue(0);
-                    sleep(200);
-                    progressBar.setValue(20);
-                    sleep(200);
-                    progressBar.setValue(40);
-                    sleep(200);
-                    progressBar.setValue(60);
-                    sleep(200);
-                    progressBar.setValue(80);
-                    sleep(200);
+                    console.append("\n" + fileName);
+                    BufferedReader br;
+                    br = new BufferedReader(new FileReader("P:\\GitHub\\sorting-thread\\src\\files\\read\\" + fileName));
+                    String line = null;
+
+                    while ((line = br.readLine()) != null) {
+                        String[] strNumbers = line.split(" ");
+                        for (String strNumber : strNumbers) {
+                            numbers.add(Integer.parseInt(strNumber));
+                        }
+                    }
+                    dataFromFiles.add(numbers);
+                    br.close();
+                    for (int value = 0; value <= 100; value++) {
+                        progressBar.setValue(value);
+                        sleep(10);
+                    }
                 } catch (InterruptedException ex) {
                     Logger.getLogger(SortingThreads.class.getName()).log(Level.SEVERE, null, ex);
                     progressBar.setValue(100);
+                } catch (FileNotFoundException ex) {
+                    Logger.getLogger(SortingThreads.class.getName()).log(Level.SEVERE, null, ex);
+                } catch (IOException ex) {
+                    Logger.getLogger(SortingThreads.class.getName()).log(Level.SEVERE, null, ex);
                 }
-                System.out.println(dataFromFiles.get(flag));
-                Collections.sort(dataFromFiles.get(flag));
+                System.out.println(numbers);
+                Collections.sort(numbers);
                 BufferedWriter out;
                 try {
                     out = new BufferedWriter(new FileWriter("P:\\GitHub\\sorting-thread\\src\\files\\write\\" + filesNames.get(flag)));
-                    out.write(dataFromFiles.get(flag).toString());
+                    out.write(numbers.toString());
                     out.close();
                     progressBar.setValue(100);
                     ++flag;
@@ -263,6 +216,24 @@ public class SortingThreads extends javax.swing.JFrame {
                 thread2.setValue(100);
                 thread3.setValue(100);
                 thread4.setValue(100);
+            }
+        }
+    }
+
+    public class QueueWatcher extends Thread {
+
+        JProgressBar progressBars[] = {thread1, thread2, thread3, thread4};
+        Thread threads[] = new Thread[numberOfThreads];
+
+        @Override
+        public void run() {
+            while (flag <= filesNames.size()) {
+                for (int j = 0; j < numberOfThreads; j++) {
+                    if (!threads[j].isAlive()) {
+                        threads[j] = new Thread(new SortingThread(progressBars[j], filesNames.get(getFlag())));
+                        threads[j].start();
+                    }
+                }
             }
         }
     }
