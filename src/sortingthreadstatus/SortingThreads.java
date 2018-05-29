@@ -239,8 +239,7 @@ public class SortingThreads extends javax.swing.JFrame {
                     out.close();
                     progressBar.setValue(100);
                 } catch (IOException ex) {
-                    Logger.getLogger(MyThread.class.getName()).log(Level.SEVERE, null, ex);
-                    progressBar.setValue(0);
+                    Logger.getLogger(SortingThreads.class.getName()).log(Level.SEVERE, null, ex);
                 }
             } else {
                 progressBar.setValue(0);
@@ -290,5 +289,4 @@ public class SortingThreads extends javax.swing.JFrame {
     private javax.swing.JProgressBar thread3;
     private javax.swing.JProgressBar thread4;
     // End of variables declaration//GEN-END:variables
-
 }
