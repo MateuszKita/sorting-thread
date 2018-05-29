@@ -11,6 +11,8 @@ import static java.lang.Thread.sleep;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JProgressBar;
@@ -19,9 +21,12 @@ public class SortingThreads extends javax.swing.JFrame {
 
     public int numberOfThreads = 4;
     static int flag = 0;
+    static int progressBarNumber = 0;
+    Timer t = new Timer();
 
     List<String> filesNames = new ArrayList<>();
     List<List<Integer>> dataFromFiles = new ArrayList<>();
+    Thread threads[] = new Thread[numberOfThreads];
 
     public SortingThreads() {
         initComponents();
@@ -30,6 +35,13 @@ public class SortingThreads extends javax.swing.JFrame {
     synchronized int getFlag() {
         flag++;
         return flag - 1;
+    }
+
+    synchronized void changeProgressBarNumber() {
+        progressBarNumber++;
+        if (progressBarNumber == threads.length) {
+            progressBarNumber = 0;
+        }
     }
 
     @SuppressWarnings("unchecked")
@@ -142,8 +154,6 @@ public class SortingThreads extends javax.swing.JFrame {
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
 
-        console.append("\n" + "heja");
-
         File folder = new File("P:\\GitHub\\sorting-thread\\src\\files\\read");
         File[] listOfFiles = folder.listFiles();
 
@@ -153,13 +163,32 @@ public class SortingThreads extends javax.swing.JFrame {
             }
         }
 
-        QueueWatcher queueWatcher = new QueueWatcher();
-        queueWatcher.start();
-        try {
-            queueWatcher.join();
-        } catch (InterruptedException ex) {
-            Logger.getLogger(SortingThreads.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        JProgressBar progressBars[] = {thread1, thread2, thread3, thread4};
+
+        t.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                System.out.println("--");
+                if (progressBarNumber < numberOfThreads) {
+                    threads[progressBarNumber] = new Thread(new SortingThread(progressBars[progressBarNumber], filesNames.get(getFlag())));
+                    threads[progressBarNumber].start();
+                    changeProgressBarNumber();
+                    System.out.println(progressBarNumber);
+                }
+                if (flag < filesNames.size() && flag >= threads.length) {
+                    if (!threads[progressBarNumber].isAlive()) {
+                        System.out.println("doszło");
+                        threads[progressBarNumber] = new Thread(new SortingThread(progressBars[progressBarNumber], filesNames.get(getFlag())));
+                        threads[progressBarNumber].start();
+                        changeProgressBarNumber();
+                    }
+                }
+                if (flag >= filesNames.size()) {
+                    t.cancel();
+                    return;
+                }
+            }
+        }, 0, 500);
     }//GEN-LAST:event_jButton1ActionPerformed
 
     public class SortingThread extends Thread {
@@ -175,7 +204,7 @@ public class SortingThreads extends javax.swing.JFrame {
         @Override
         public void run() {
             List<Integer> numbers = new ArrayList<>();
-            if (flag < filesNames.size()) {
+            if (flag <= filesNames.size()) {
                 try {
                     console.append("\n" + fileName);
                     BufferedReader br;
@@ -196,48 +225,25 @@ public class SortingThreads extends javax.swing.JFrame {
                     }
                 } catch (InterruptedException ex) {
                     Logger.getLogger(SortingThreads.class.getName()).log(Level.SEVERE, null, ex);
-                    progressBar.setValue(100);
+                    progressBar.setValue(0);
                 } catch (FileNotFoundException ex) {
                     Logger.getLogger(SortingThreads.class.getName()).log(Level.SEVERE, null, ex);
                 } catch (IOException ex) {
                     Logger.getLogger(SortingThreads.class.getName()).log(Level.SEVERE, null, ex);
                 }
-                System.out.println(numbers);
                 Collections.sort(numbers);
                 BufferedWriter out;
                 try {
-                    out = new BufferedWriter(new FileWriter("P:\\GitHub\\sorting-thread\\src\\files\\write\\" + filesNames.get(flag)));
+                    out = new BufferedWriter(new FileWriter("P:\\GitHub\\sorting-thread\\src\\files\\write\\" + fileName));
                     out.write(numbers.toString());
                     out.close();
                     progressBar.setValue(100);
-                    ++flag;
                 } catch (IOException ex) {
                     Logger.getLogger(MyThread.class.getName()).log(Level.SEVERE, null, ex);
-                    progressBar.setValue(100);
+                    progressBar.setValue(0);
                 }
             } else {
-                thread1.setValue(100);
-                thread2.setValue(100);
-                thread3.setValue(100);
-                thread4.setValue(100);
-            }
-        }
-    }
-
-    public class QueueWatcher extends Thread {
-
-        JProgressBar progressBars[] = {thread1, thread2, thread3, thread4};
-        Thread threads[] = new Thread[numberOfThreads];
-
-        @Override
-        public void run() {
-            while (flag <= filesNames.size()) {
-                for (int j = 0; j < numberOfThreads; j++) {
-                    if (!threads[j].isAlive()) {
-                        threads[j] = new Thread(new SortingThread(progressBars[j], filesNames.get(getFlag())));
-                        threads[j].start();
-                    }
-                }
+                progressBar.setValue(0);
             }
         }
     }
